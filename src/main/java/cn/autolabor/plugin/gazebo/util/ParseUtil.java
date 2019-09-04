@@ -29,8 +29,9 @@ public class ParseUtil {
             int size = gazeboHeader(header);
             byte[] body = new byte[size];
             int bodyLen = is.read(body);
-            if (bodyLen != size) {
-                throw Sugar.makeThrow("Read Body error!");
+            while (bodyLen != size) {
+                int add = is.read(body, bodyLen, size - bodyLen);
+                bodyLen += add;
             }
             return ByteString.copyFrom(body);
         }
