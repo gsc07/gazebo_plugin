@@ -169,6 +169,4 @@ public class GazeboBridgeTask extends AbstractTask {
     public static void main(String[] args) {
         ServerManager.me().register(new GazeboBridgeTask());
     }
-
-
 }
