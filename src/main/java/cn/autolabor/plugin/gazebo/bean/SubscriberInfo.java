@@ -1,7 +1,7 @@
 package cn.autolabor.plugin.gazebo.bean;
 
 import cn.autolabor.plugin.gazebo.conversion.ConversionInterface;
-import cn.autolabor.plugin.gazebo.task.SubscriberDataTask;
+import cn.autolabor.plugin.gazebo.task.SubscribeDataTask;
 import cn.autolabor.util.reflect.TypeNode;
 
 import java.util.HashMap;
@@ -13,7 +13,7 @@ public class SubscriberInfo {
     private String gzMsgType;
     private String topic;
     private TypeNode typeNode;
-    private Map<Publisher, SubscriberDataTask> info = new HashMap<>();
+    private Map<Publisher, SubscribeDataTask> info = new HashMap<>();
     private ConversionInterface conv;
 
     public SubscriberInfo(String gzTopic, String gzMsgType, String topic, TypeNode typeNode, ConversionInterface conv) {
@@ -56,11 +56,11 @@ public class SubscriberInfo {
         this.typeNode = typeNode;
     }
 
-    public Map<Publisher, SubscriberDataTask> getInfo() {
+    public Map<Publisher, SubscribeDataTask> getInfo() {
         return info;
     }
 
-    public void setInfo(Map<Publisher, SubscriberDataTask> info) {
+    public void setInfo(Map<Publisher, SubscribeDataTask> info) {
         this.info = info;
     }
 

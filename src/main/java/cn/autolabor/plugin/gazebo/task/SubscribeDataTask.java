@@ -18,7 +18,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 @TaskProperties(unique = false, preemptive = true)
-public class SubscriberDataTask extends AbstractTask {
+public class SubscribeDataTask extends AbstractTask {
 
     private MessageHandle messageHandle;
     private Publisher publisher;
@@ -27,7 +27,7 @@ public class SubscriberDataTask extends AbstractTask {
     private InputStream is;
     private OutputStream os;
 
-    public SubscriberDataTask(Publisher publisherInfo, SubscriberInfo subscriberInfo, String... name) {
+    public SubscribeDataTask(Publisher publisherInfo, SubscriberInfo subscriberInfo, String... name) {
         super(name);
         this.publisher = publisherInfo;
         this.subscriberInfo = subscriberInfo;

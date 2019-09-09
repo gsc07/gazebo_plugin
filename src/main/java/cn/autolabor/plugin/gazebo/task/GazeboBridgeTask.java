@@ -35,7 +35,8 @@ public class GazeboBridgeTask extends AbstractTask {
     private InputStream is;
     private OutputStream os;
 
-    private Map<String, SubscriberInfo> subscriberMap = new HashMap<>(); // TOPIC Socket
+    private Map<String, SubscriberInfo> subscriberMap = new HashMap<>();
+    private Map<String, PublishDataTask> publisherMap = new HashMap<>();
 
     private final static GazeboBridgeTask single = ServerManager.me().register(new GazeboBridgeTask());
 
@@ -43,14 +44,36 @@ public class GazeboBridgeTask extends AbstractTask {
         return single;
     }
 
-    // 外部调用方法
+    // 外部调用方法 注册订阅
     public void registerSubscriber(String gzTopic, String gzMsgType, String topic, TypeNode typeNode, ConversionInterface conv) {
         if (subscriberMap.containsKey(gzTopic)) {
             System.err.println(String.format("Topic %s has been registered", gzTopic));
             return;
         }
         subscriberMap.put(gzTopic, new SubscriberInfo(gzTopic, gzMsgType, topic, typeNode, conv));
-        asyncRun("subscribe", gzTopic, gzMsgType);
+        asyncRun("masterSend", "subscribe", new Subscriber(gzTopic, serverHost, serverPort, gzMsgType, false), true);
+    }
+
+    // 外部调用方法 注销订阅
+    public void unRegisterSubscriber(String gzTopic) {
+        if (!subscriberMap.containsKey(gzTopic)) {
+            System.err.println(String.format("Topic %s has not been registered", gzTopic));
+            return;
+        }
+        SubscriberInfo subscriberInfo = subscriberMap.get(gzTopic);
+        subscriberInfo.getInfo().values().forEach(SubscribeDataTask::remove);
+        subscriberMap.remove(gzTopic);
+        asyncRun("masterSend", "unsubscribe", new Subscriber(gzTopic, serverHost, serverPort, "", false), false);
+    }
+
+    // 外部调用方法 注册发布
+    public void registerPublisher(String gzTopic, String gzMsgType, String topic, TypeNode typeNode, ConversionInterface conv) {
+        if (publisherMap.containsKey(gzTopic)) {
+            System.err.println(String.format("Topic %s has been advertised", gzTopic));
+            return;
+        }
+        publisherMap.put(gzTopic, ServerManager.me().register(new PublishDataTask(topic, typeNode, conv)));
+        asyncRun("masterSend", "advertise", new Publisher(gzTopic, gzMsgType, serverHost, serverPort), true);
     }
 
 
@@ -72,19 +95,20 @@ public class GazeboBridgeTask extends AbstractTask {
         }
     }
 
-    // 给 Master 发订阅信息
-    @TaskFunction(name = "subscribe")
-    public void subscribe(String gzTopic, String gzMsgType) {
+    @TaskFunction(name = "masterSend")
+    public void masterSend(String type, ProtoBufBeanInterface data, boolean repeat) {
         if (os != null) {
-            Packet<Subscriber> packet = new Packet<>("subscribe", new Subscriber(gzTopic, serverHost, serverPort, gzMsgType, false));
+            Packet packet = new Packet<>(type, data);
             try {
                 ParseUtil.writeData(packet.encode(), os);
+                return;
             } catch (IOException e) {
-                System.err.println(String.format("Subscribe %s error!", gzTopic));
                 e.printStackTrace();
             }
-        } else {
-            asyncRunLater("subscribe", 2000L, gzTopic, gzMsgType);
+        }
+
+        if (repeat) {
+            asyncRunLater("masterSend", 2000L, type, data, true);
         }
     }
 
@@ -123,27 +147,38 @@ public class GazeboBridgeTask extends AbstractTask {
             try {
                 ProtoPacket.Packet packet = ProtoPacket.Packet.parseFrom(ParseUtil.readData(is));
                 switch (packet.getType()) {
-                    case "publisher_add":
-                        break;
-                    case "publisher_subscribe":
+                    case "publisher_subscribe": // master 发现有发布者，将发布者推送给订阅者
                         Publisher publisher = new Publisher().decode(packet.getSerializedData());
                         if (subscriberMap.containsKey(publisher.getTopic())) {
                             SubscriberInfo subscriberInfo = subscriberMap.get(publisher.getTopic());
                             if (!subscriberInfo.getInfo().containsKey(publisher)) {
-                                SubscriberDataTask task = ServerManager.me().register(new SubscriberDataTask(publisher, subscriberInfo));
+                                SubscribeDataTask task = ServerManager.me().register(new SubscribeDataTask(publisher, subscriberInfo));
                                 subscriberMap.get(publisher.getTopic()).getInfo().put(publisher, task);
                             }
                         }
                         break;
-                    case "unsubscribe":
+                    case "unsubscribe": // 远端订阅取消
+                        Subscriber subscriber = new Subscriber().decode(packet.getSerializedData());
+                        if (publisherMap.containsKey(subscriber.getTopic())) {
+                            publisherMap.get(subscriber.getTopic()).unConnect(subscriber);
+                        }
                         break;
-                    case "publisher_del":
+                    case "publisher_del": // 远端发布话题关闭
+                        Publisher publisherDel = new Publisher().decode(packet.getSerializedData());
+                        if (subscriberMap.containsKey(publisherDel.getTopic())) {
+                            if (subscriberMap.get(publisherDel.getTopic()).getInfo().containsKey(publisherDel)) {
+                                subscriberMap.get(publisherDel.getTopic()).getInfo().get(publisherDel).remove();
+                                subscriberMap.get(publisherDel.getTopic()).getInfo().remove(publisherDel);
+                            }
+                        }
                         break;
                     default:
+                        System.err.println(String.format("Unhandle ->\n%s\n", packet.toString()));
                         break;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                return;
             }
         }
     }
@@ -162,8 +197,20 @@ public class GazeboBridgeTask extends AbstractTask {
     }
 
     // node server主要用于处理其他客户端的订阅
+    @SuppressWarnings("unchecked")
     @TaskFunction(name = "handleClient")
     public void handleClient(Socket client) {
+        try {
+            Packet<Subscriber> packet = new Packet<>(new Subscriber()).decode(ParseUtil.readData(client.getInputStream()));
+            if (packet.getType().equals("sub")) {
+                if (publisherMap.containsKey(packet.getData().getTopic())) {
+                    publisherMap.get(packet.getData().getTopic()).connect(packet.getData(), client);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public static void main(String[] args) {

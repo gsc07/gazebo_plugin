@@ -4,6 +4,8 @@ import cn.autolabor.plugin.gazebo.msgs.ProtoSubscribe;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.util.Objects;
+
 public class Subscriber implements ProtoBufBeanInterface {
 
     private String topic;
@@ -11,6 +13,9 @@ public class Subscriber implements ProtoBufBeanInterface {
     private int port;
     private String msgType;
     private boolean latching;
+
+    public Subscriber() {
+    }
 
     public Subscriber(String topic, String host, int port, String msgType, boolean latching) {
         this.topic = topic;
@@ -69,12 +74,42 @@ public class Subscriber implements ProtoBufBeanInterface {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        Subscriber that = (Subscriber) o;
+
+        if (port != that.port)
+            return false;
+        if (latching != that.latching)
+            return false;
+        if (!Objects.equals(topic, that.topic))
+            return false;
+        if (!Objects.equals(host, that.host))
+            return false;
+        return Objects.equals(msgType, that.msgType);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = topic != null ? topic.hashCode() : 0;
+        result = 31 * result + (host != null ? host.hashCode() : 0);
+        result = 31 * result + port;
+        result = 31 * result + (msgType != null ? msgType.hashCode() : 0);
+        result = 31 * result + (latching ? 1 : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "Subscriber{" + "topic='" + topic + '\'' + ", host='" + host + '\'' + ", port=" + port + ", msgType='" + msgType + '\'' + ", latching=" + latching + '}';
     }
 
     @Override
-    public ProtoBufBeanInterface decode(ByteString bytes) throws InvalidProtocolBufferException {
+    public Subscriber decode(ByteString bytes) throws InvalidProtocolBufferException {
         ProtoSubscribe.Subscribe parseData = ProtoSubscribe.Subscribe.parseFrom(bytes);
         this.topic = parseData.getTopic();
         this.msgType = parseData.getMsgType();
