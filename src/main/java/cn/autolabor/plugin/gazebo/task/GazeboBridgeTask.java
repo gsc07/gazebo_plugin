@@ -7,7 +7,7 @@ import cn.autolabor.core.server.ServerManager;
 import cn.autolabor.core.server.executor.AbstractTask;
 import cn.autolabor.plugin.gazebo.bean.*;
 import cn.autolabor.plugin.gazebo.conversion.ConversionInterface;
-import cn.autolabor.plugin.gazebo.msgs.ProtoPacket;
+import cn.autolabor.plugin.gazebo.gazebomsgs.ProtoPacket;
 import cn.autolabor.plugin.gazebo.util.ParseUtil;
 import cn.autolabor.util.reflect.TypeNode;
 

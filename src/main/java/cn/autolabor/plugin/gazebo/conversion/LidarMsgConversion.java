@@ -1,8 +1,8 @@
 package cn.autolabor.plugin.gazebo.conversion;
 
 import cn.autolabor.message.sensor.MsgLidar;
-import cn.autolabor.plugin.gazebo.msgs.ProtoLaserscan;
-import cn.autolabor.plugin.gazebo.msgs.ProtoLaserscanStamped;
+import cn.autolabor.plugin.gazebo.gazebomsgs.ProtoLaserscan;
+import cn.autolabor.plugin.gazebo.gazebomsgs.ProtoLaserscanStamped;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 

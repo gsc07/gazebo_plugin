@@ -1,7 +1,7 @@
 package cn.autolabor.plugin.gazebo.bean;
 
-import cn.autolabor.plugin.gazebo.msgs.ProtoPublish;
-import cn.autolabor.plugin.gazebo.msgs.ProtoPublishers;
+import cn.autolabor.plugin.gazebo.gazebomsgs.ProtoPublish;
+import cn.autolabor.plugin.gazebo.gazebomsgs.ProtoPublishers;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 

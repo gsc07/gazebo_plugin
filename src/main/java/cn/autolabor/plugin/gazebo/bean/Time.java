@@ -1,6 +1,6 @@
 package cn.autolabor.plugin.gazebo.bean;
 
-import cn.autolabor.plugin.gazebo.msgs.ProtoTime;
+import cn.autolabor.plugin.gazebo.gazebomsgs.ProtoTime;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 

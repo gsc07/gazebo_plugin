@@ -2,9 +2,9 @@ package cn.autolabor.plugin.gazebo.conversion;
 
 import cn.autolabor.message.common.Quaternion;
 import cn.autolabor.message.navigation.Msg2DTwist;
-import cn.autolabor.plugin.gazebo.msgs.ProtoPose;
-import cn.autolabor.plugin.gazebo.msgs.ProtoQuaternion;
-import cn.autolabor.plugin.gazebo.msgs.ProtoVector3d;
+import cn.autolabor.plugin.gazebo.gazebomsgs.ProtoPose;
+import cn.autolabor.plugin.gazebo.gazebomsgs.ProtoQuaternion;
+import cn.autolabor.plugin.gazebo.gazebomsgs.ProtoVector3d;
 import com.google.protobuf.ByteString;
 
 import static java.lang.Math.*;

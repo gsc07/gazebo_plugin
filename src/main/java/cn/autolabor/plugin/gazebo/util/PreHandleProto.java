@@ -1,7 +1,5 @@
 package cn.autolabor.plugin.gazebo.util;
 
-import cn.autolabor.util.Strings;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -23,8 +21,13 @@ public class PreHandleProto {
 
             for (int i = 0; null != filelist && i < filelist.length; i++) {
                 List<String> org = Files.readAllLines(filelist[i].toPath());
-                org.add(2, "\noption java_package = \"cn.autolabor.plugin.gazebo.msgs\";");
-                org.add(3, String.format("option java_outer_classname = \"Proto%s\";", Strings.upperFirst(Strings.line2Hump(Strings.trimExtension(filelist[i].getName())))));
+                //                org.add(2, "\noption java_package = \"cn.autolabor.plugin.gazebo.ignitionmsgs\";");
+                //                org.add(3, String.format("option java_outer_classname = \"Ignition%s\";", Strings.upperFirst(Strings.line2Hump(Strings.trimExtension(filelist[i].getName())))));
+                for (int j = 0; j < org.size(); j++) {
+                    if (org.get(j).startsWith("import \"ignition/msgs/")) {
+                        org.set(j,org.get(j).replace("ignition/msgs/",""));
+                    }
+                }
                 Files.write(new File(outPath + filelist[i].getName()).toPath(), org, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             }
         }

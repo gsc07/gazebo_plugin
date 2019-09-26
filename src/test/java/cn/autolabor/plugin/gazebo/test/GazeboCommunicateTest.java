@@ -16,5 +16,13 @@ public class GazeboCommunicateTest {
 
         ServerManager.me().register(new SubscribeLidar());
         ServerManager.me().register(new ControlCarTest());
+
+        try {
+            Thread.sleep(5000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        ServerManager.me().stop();
     }
 }
